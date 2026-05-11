@@ -43,8 +43,8 @@ class _PiyasaScreenState extends State<PiyasaScreen> {
             children: [
               Column(
                 children: [
-                  Text("Playstation ", style: TextStyle(fontSize: 12, color: Colors.black)),
-                  Text("Zamanı", style: TextStyle(fontSize: 15, color: Colors.black)),
+                  Text("Playstation ", style: TextStyle(fontSize: 15, color: Colors.black)),
+                  Text("Zamanı", style: TextStyle(fontSize: 18, color: Colors.black)),
                 ],
               ),
               SizedBox(
