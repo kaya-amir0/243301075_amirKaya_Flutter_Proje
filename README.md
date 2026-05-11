@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ps_kiralama
 
 A new Flutter project.
@@ -14,3 +15,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# 243301075_amirKaya_Flutter_Proje
+Playstation kiralama platformu  
+>>>>>>> 5ecad8302401a4612a09e8b74f061745bb958ba4
