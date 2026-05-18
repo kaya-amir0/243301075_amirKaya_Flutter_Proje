@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ps_kiralama/screens/musteri/musteri_ana_screen.dart';
+
 import 'package:ps_kiralama/screens/satici/piyasa_screen.dart';
 import 'package:ps_kiralama/screens/satici/satici_ana_screen.dart';
 import 'package:ps_kiralama/services/auth_service.dart';
@@ -81,7 +83,7 @@ Widget _baslangicEkrani() {
   if (rol == 'satici') {
     return const SaticiAnaScreen();
   } else if (rol == 'musteri') {
-    return const Center();
+    return const MusteriAnaScreen();
   } else {
     return const LoginScreen();
   }

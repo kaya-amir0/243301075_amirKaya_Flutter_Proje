@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+
+import 'package:ps_kiralama/services/supabase_client.dart';
+
 class PiyasaScreen extends StatefulWidget {
   const PiyasaScreen({super.key});
 
@@ -18,6 +21,40 @@ class _PiyasaScreenState extends State<PiyasaScreen> {
     'En Ucuz',
     'Yakınımda',
   ];
+
+  List<Map<String, dynamic>> _ilanlar = []; // ilanları tutacak liste
+
+  @override
+  void initState() {
+    super.initState();
+    _ilanlariGetir(); // sayfa açılınca çek
+  }
+
+  Future<void> _ilanlariGetir() async {
+    final data = await supabase
+        .from('ilanlar')
+        .select('''
+      ilan_id,
+      fiyat,
+      durum,
+      konsollar (
+        konsol_modeli,
+        saticilar (
+          satici_adi,
+          satici_soyadi,
+          satici_enlemi,
+          satici_boylami
+        )
+      )
+    ''')
+        .eq('durum', 'AKTİF/HAZIR');
+    print("gelen veri : $data");
+
+    setState(() {
+      _ilanlar = List<Map<String, dynamic>>.from(data);
+    });
+
+  }
 
   @override
   void dispose() {
@@ -59,9 +96,14 @@ class _PiyasaScreenState extends State<PiyasaScreen> {
           // Profil ikonu
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              backgroundColor: Colors.grey.shade100,
-              child: const Icon(Icons.person),
+            child: GestureDetector(
+              onTap: () {
+
+              },
+              child: CircleAvatar(
+                backgroundColor: Colors.grey.shade100,
+                child: const Icon(Icons.person),
+              ),
             ),
           ),
         ],
@@ -98,7 +140,7 @@ class _PiyasaScreenState extends State<PiyasaScreen> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: _filtreler.length,
+              itemCount: _ilanlar.length,
               itemBuilder: (context, index) {
                 final filtre = _filtreler[index];
                 final secili = _secilenFiltre == filtre;
@@ -125,12 +167,15 @@ class _PiyasaScreenState extends State<PiyasaScreen> {
 
           // İlan listesi
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 5, // geçici, Supabase'den gelecek
-              itemBuilder: (context, index) {
-                return _ilanKarti(index);
-              },
+            child: Expanded(
+              child: _ilanlar.isEmpty
+                  ? const Center(child: CircularProgressIndicator()) // yükleniyor
+                  : ListView.builder(
+                itemCount: _ilanlar.length,
+                itemBuilder: (context, index) {
+                  return _ilanKarti(_ilanlar[index]);
+                },
+              ),
             ),
           ),
 
@@ -140,126 +185,57 @@ class _PiyasaScreenState extends State<PiyasaScreen> {
   }
 
   // İlan kartı widget'ı
-  Widget _ilanKarti(int index) {
-    String model = index % 2 == 0 ? 'PS5' : 'PS4';
+// _ilanKarti fonksiyonunu güncelle:
+  Widget _ilanKarti(Map<String, dynamic> ilan) {
+
+    // verileri çek
+    final konsol = ilan['konsollar'] as Map<String, dynamic>;
+    final satici = konsol['saticilar'] as Map<String, dynamic>;
+
+    final model = konsol['konsol_modeli'] ?? 'PS5';
+    final fiyat = ilan['fiyat']?.toString() ?? '0';
+    final durum = ilan['durum'] ?? 'AKTİF/HAZIR';
+    final saticiAdi = '${satici['satici_adi']} ${satici['satici_soyadi']}';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+      // ... aynı tasarım
+      child: Row(
+        children: [
+          // Konsol görseli
+          Image.asset(
+            model == 'PS5' ? 'assets/ps5.png' : 'assets/ps4.png',
+            width: MediaQuery.of(context).size.width/3,
+
+            height: MediaQuery.of(context).size.height/10,
+          ),
+
+          // Bilgiler
+          Row(
+            children: [
+
+              Column(
+                children: [
+                  Text("Model : "+model),
+                  Text("Satıcı : "+saticiAdi),
+                ],
+              ),
+              SizedBox(width: 40,),
+              Column(
+                children: [
+                  if (durum=="AKTİF/HAZIR") Text("UYGUN",style: TextStyle(color: Colors.green,fontWeight: FontWeight
+                  .bold),) else Text("KİRADA",style: TextStyle(color: Colors.red,fontWeight: FontWeight.bold),),
+                  Text('$fiyat TL'),
+                ],
+              ),
+            ],
+
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            // Konsol görseli
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  model == 'PS5' ? 'assets/ps5.png' : 'assets/ps4.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            // Bilgiler
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    model,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Ali Yılmaz',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 16),
-                      const Text(' 4.8  ', style: TextStyle(fontSize: 12)),
-                      Icon(Icons.location_on, color: Colors.grey.shade400, size: 16),
-                      Text(' 2 km', style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Fiyat + durum
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Text(
-                  '150 TL',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                ),
-                const Text('/gün', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Müsait',
-                    style: TextStyle(color: Colors.green, fontSize: 11),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:ps_kiralama/screens/musteri/musteri_ana_screen.dart';
 import 'package:ps_kiralama/screens/satici/satici_ana_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -28,12 +29,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     // 2 saniye sonra yönlendir
     Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => SaticiAnaScreen(),
-        ),
-      );
+      Future.delayed(const Duration(seconds: 2), () {
+        if (widget.rol == 'satici') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const SaticiAnaScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const MusteriAnaScreen()),
+          );
+        }
+      });
+
     });
   }
 
