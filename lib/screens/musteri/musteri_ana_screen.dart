@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:ps_kiralama/screens/musteri/musteri_piyasa_screen.dart';
+import 'package:ps_kiralama/screens/musteri/kiralamalarim_screen.dart';
+import 'package:ps_kiralama/screens/musteri/musteri_profil_screen.dart';
 
 class MusteriAnaScreen extends StatefulWidget {
   const MusteriAnaScreen({super.key});
@@ -13,7 +15,9 @@ class _MusteriAnaScreenState extends State<MusteriAnaScreen> {
   int _secilenSayfa = 0;
 
   final List<Widget> _sayfalar = [
-
+    const MusteriPiyasaScreen(),
+    const KiralamalarimScreen(),
+    const MusteriProfilScreen(),
   ];
 
   @override
