@@ -3,7 +3,7 @@ import 'package:ps_kiralama/screens/satici/ilan_ekle_screen.dart';
 import 'package:ps_kiralama/screens/satici/satici_ilanlar_screen.dart';
 import 'package:ps_kiralama/screens/satici/piyasa_screen.dart';
 import 'package:ps_kiralama/screens/satici/kiralamalar_screen.dart';
-
+import 'package:ps_kiralama/screens/satici/profil_screen.dart';
 
 class SaticiAnaScreen extends StatefulWidget {
   const SaticiAnaScreen({super.key});
@@ -21,7 +21,7 @@ class _SaticiAnaScreenState extends State<SaticiAnaScreen> {
     const SaticiIlanlarScreen(),
     const IlanEkleScreen(),
     const KiralamalarScreen(),
-
+    const ProfilScreen(),
   ];
 
   @override
