@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
-
+import 'package:ps_kiralama/screens/musteri/musteri_profil_screen.dart';
+import 'package:ps_kiralama/screens/satici/profil_screen.dart';
 import 'package:ps_kiralama/services/supabase_client.dart';
 
 class PiyasaScreen extends StatefulWidget {
@@ -98,7 +98,10 @@ class _PiyasaScreenState extends State<PiyasaScreen> {
             padding: const EdgeInsets.only(right: 16),
             child: GestureDetector(
               onTap: () {
-
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfilScreen()),
+                );
               },
               child: CircleAvatar(
                 backgroundColor: Colors.grey.shade100,
@@ -236,6 +239,14 @@ class _PiyasaScreenState extends State<PiyasaScreen> {
   }
 
 }
+
+
+
+
+
+
+
+
 
 
 

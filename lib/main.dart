@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ps_kiralama/screens/musteri/musteri_ana_screen.dart';
-
+import 'package:ps_kiralama/screens/musteri/musteri_piyasa_screen.dart';
 import 'package:ps_kiralama/screens/satici/piyasa_screen.dart';
 import 'package:ps_kiralama/screens/satici/satici_ana_screen.dart';
 import 'package:ps_kiralama/services/auth_service.dart';
