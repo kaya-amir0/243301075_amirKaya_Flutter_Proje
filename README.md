@@ -19,8 +19,8 @@ samples, guidance on mobile development, and a full API reference.
 # 243301075_amirKaya_Flutter_Proje
 Playstation kiralama platformu  
 Test hesap bilgileri : 
-Musteri mail : deneme_musteri@gmail.com
-Musteri Sifre : deneme1
-Satici mail : deneme_satici@gmail.com
-Satici Sifre : deneme2
+Musteri mail : deneme_musteri@gmail.com /
+Musteri Sifre : deneme1 ------------ 
+Satici mail : deneme_satici@gmail.com - 
+Satici Sifre : deneme2 - 
 >>>>>>> 5ecad8302401a4612a09e8b74f061745bb958ba4
