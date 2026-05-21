@@ -14,12 +14,28 @@ class _MusteriProfilScreenState extends State<MusteriProfilScreen> {
 
   Map<String, dynamic>? _musteri;
   bool _yukleniyor = true;
+  bool _duzenlemeModu = false;
+  int _toplamKiralama = 0;
+  double _ortalamaPuan = 0.0;
   final authService = AuthService();
+
+  // Düzenleme için controller'lar
+  final adController = TextEditingController();
+  final soyadController = TextEditingController();
+  final telController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _musteriGetir();
+  }
+
+  @override
+  void dispose() {
+    adController.dispose();
+    soyadController.dispose();
+    telController.dispose();
+    super.dispose();
   }
 
   Future<void> _musteriGetir() async {
@@ -30,12 +46,74 @@ class _MusteriProfilScreenState extends State<MusteriProfilScreen> {
           .eq('user_id', supabase.auth.currentUser!.id)
           .single();
 
+      // İstatistikleri çek
+      final musteriId = data['musteri_id'].toString();
+
+      final kiralamalar = await supabase
+          .from('kiralamalar')
+          .select('kiralama_id, degerlendirmeler(puan)')
+          .eq('musteri_id', musteriId);
+
+      int toplamKiralama = kiralamalar.length;
+      double toplamPuan = 0;
+      int puanSayisi = 0;
+
+      for (final k in kiralamalar) {
+        final degerlendirmeler = k['degerlendirmeler'];
+        if (degerlendirmeler is List && degerlendirmeler.isNotEmpty) {
+          toplamPuan += degerlendirmeler[0]['puan'];
+          puanSayisi++;
+        }
+      }
+
       setState(() {
         _musteri = data;
+        _toplamKiralama = toplamKiralama;
+        _ortalamaPuan = puanSayisi > 0 ? toplamPuan / puanSayisi : 0.0;
         _yukleniyor = false;
+
+        // Controller'ları doldur
+        adController.text = data['musteri_adi'] ?? '';
+        soyadController.text = data['musteri_soyadi'] ?? '';
+        telController.text = data['musteri_tel'] ?? '';
       });
     } catch (e) {
       setState(() => _yukleniyor = false);
+    }
+  }
+
+  Future<void> _bilgileriGuncelle() async {
+    try {
+      await supabase
+          .from('musteriler')
+          .update({
+        'musteri_adi': adController.text.trim(),
+        'musteri_soyadi': soyadController.text.trim(),
+        'musteri_tel': telController.text.trim(),
+      })
+          .eq('user_id', supabase.auth.currentUser!.id);
+
+      // Log kaydı
+      await supabase.from('logs').insert({
+        'user_id': supabase.auth.currentUser!.id,
+        'islem': 'profil_guncellendi',
+        'aciklama': 'Müşteri profil bilgileri güncellendi',
+      });
+
+      setState(() => _duzenlemeModu = false);
+      await _musteriGetir();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profil güncellendi!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e')),
+        );
+      }
     }
   }
 
@@ -82,6 +160,20 @@ class _MusteriProfilScreenState extends State<MusteriProfilScreen> {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
+          // Düzenle / Kaydet butonu
+          IconButton(
+            onPressed: () {
+              if (_duzenlemeModu) {
+                _bilgileriGuncelle();
+              } else {
+                setState(() => _duzenlemeModu = true);
+              }
+            },
+            icon: Icon(
+              _duzenlemeModu ? Icons.check : Icons.edit,
+              color: _duzenlemeModu ? Colors.green : Colors.black,
+            ),
+          ),
           IconButton(
             onPressed: _cikisYap,
             icon: const Icon(Icons.logout, color: Colors.red),
@@ -130,14 +222,38 @@ class _MusteriProfilScreenState extends State<MusteriProfilScreen> {
             ),
 
             const SizedBox(height: 24),
+
+            // İstatistikler
+            Row(
+              children: [
+                Expanded(
+                  child: _istatistikKutusu(
+                    icon: Icons.history,
+                    deger: '$_toplamKiralama',
+                    baslik: 'Kiralama',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _istatistikKutusu(
+                    icon: Icons.star,
+                    deger: _ortalamaPuan > 0
+                        ? _ortalamaPuan.toStringAsFixed(1)
+                        : '-',
+                    baslik: 'Ort. Puan',
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
 
-            _bilgiSatiri(
-              icon: Icons.phone,
-              baslik: 'Telefon',
-              deger: _musteri!['musteri_tel'] ?? 'Eklenmemiş',
-            ),
+            // Bilgiler — düzenleme moduna göre değişir
+            _duzenlemeModu
+                ? _duzenleFormu()
+                : _bilgiListesi(),
 
             const SizedBox(height: 24),
             const Divider(),
@@ -163,6 +279,99 @@ class _MusteriProfilScreenState extends State<MusteriProfilScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // İstatistik kutusu
+  Widget _istatistikKutusu({
+    required IconData icon,
+    required String deger,
+    required String baslik,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.black, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            deger,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            baslik,
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Bilgi listesi (görüntüleme modu)
+  Widget _bilgiListesi() {
+    return Column(
+      children: [
+        _bilgiSatiri(
+          icon: Icons.person,
+          baslik: 'Ad',
+          deger: _musteri!['musteri_adi'] ?? '-',
+        ),
+        const SizedBox(height: 12),
+        _bilgiSatiri(
+          icon: Icons.person_outline,
+          baslik: 'Soyad',
+          deger: _musteri!['musteri_soyadi'] ?? '-',
+        ),
+        const SizedBox(height: 12),
+        _bilgiSatiri(
+          icon: Icons.phone,
+          baslik: 'Telefon',
+          deger: _musteri!['musteri_tel'] ?? 'Eklenmemiş',
+        ),
+      ],
+    );
+  }
+
+  // Düzenleme formu
+  Widget _duzenleFormu() {
+    return Column(
+      children: [
+        _duzenlemeAlani(adController, 'Ad', Icons.person),
+        const SizedBox(height: 12),
+        _duzenlemeAlani(soyadController, 'Soyad', Icons.person_outline),
+        const SizedBox(height: 12),
+        _duzenlemeAlani(telController, 'Telefon', Icons.phone,
+            klavyeTipi: TextInputType.phone),
+      ],
+    );
+  }
+
+  Widget _duzenlemeAlani(
+      TextEditingController controller,
+      String label,
+      IconData icon, {
+        TextInputType klavyeTipi = TextInputType.text,
+      }) {
+    return TextField(
+      controller: controller,
+      keyboardType: klavyeTipi,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.black),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.black, width: 2),
         ),
       ),
     );
