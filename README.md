@@ -25,6 +25,14 @@ Satici mail : deneme_satici@gmail.com -
 Satici Sifre : deneme2 - 
 
 
+
+https://github.com/user-attachments/assets/2c72a0e4-13e1-4e6b-94e7-e3d28cc533b2
+
+
+
+
+
+
 Musteri : 
 
 
