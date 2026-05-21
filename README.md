@@ -26,7 +26,10 @@ Satici Sifre : deneme2 -
 
 
 
-https://github.com/user-attachments/assets/2c72a0e4-13e1-4e6b-94e7-e3d28cc533b2
+
+
+https://github.com/user-attachments/assets/003b0fa7-1dbe-4058-9b5a-9cfa558724e0
+
 
 
 
